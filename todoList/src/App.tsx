@@ -1,24 +1,59 @@
 // TodoList.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-
+import { v4 as uuidv4 } from "uuid";
 interface Todo {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
 
+type dropdownProps = "done" | "yet" | "all";
+
 const TodoApp = () => {
   const [tempwork, setTempwork] = useState<string>("");
-  const [todolist, setTodolist] = useState<Todo[]>([]);
-  const [todoNumber, setTodoNumber] = useState<number>(0);
+  const [dropdown, setDropdown] = useState<dropdownProps>("all");
+  const [dropdownIsopen, setDropdwonIsopen] = useState<boolean>(false);
+  const [keyword, setKeyword] = useState<string>("");
+  const [searchedlist, setSearchedlist] = useState<Todo[]>([]);
 
-  const handletempwork = (e) => {
-    console.log(e);
-    setTempwork(e.target.value);
+  const [todolist, setTodolist] = useState<Todo[]>(() => {
+    const getData = localStorage.getItem("data");
+    return getData ? JSON.parse(getData) : [];
+  });
+
+  const searchedTodoList = () => {
+    setSearchedlist(
+      todolist.filter((todo) => {
+        todo.text.includes(keyword);
+      })
+    );
+    console.log(searchedlist);
   };
 
-  const handletodoCheck = (id: number) => {
+  const filteredTodoList = todolist.filter((todo) => {
+    switch (dropdown) {
+      case "yet":
+        return !todo.completed;
+      case "done":
+        return todo.completed;
+      default:
+        return true;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("data", JSON.stringify(todolist));
+  }, [todolist]);
+
+  const handletempwork = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTempwork(e.target.value);
+  };
+  const deleteTodo = (id: string) => {
+    setTodolist(todolist.filter((todo) => todo.id !== id));
+  };
+
+  const handletodoCheck = (id: string) => {
     setTodolist(
       todolist.map((todo) => {
         if (todo.id === id) {
@@ -31,15 +66,23 @@ const TodoApp = () => {
       })
     );
   };
+
   const addTodo = () => {
-    setTodoNumber(todoNumber + 1);
+    if (tempwork.length < 1) {
+      return;
+    }
 
     const newTodo = {
-      id: todoNumber,
+      id: uuidv4(),
       text: tempwork,
       completed: false,
     };
     setTodolist([newTodo, ...todolist]);
+    setTempwork("");
+  };
+  const handledropdown = (temp: dropdownProps) => {
+    setDropdown(temp);
+    setDropdwonIsopen(false);
   };
   return (
     <Container>
@@ -54,25 +97,49 @@ const TodoApp = () => {
         />
         <Button onClick={addTodo}>추가</Button>
       </InputContainer>
+      <div>
+        <input
+          type="text"
+          placeholder="검색"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+        <button onClick={() => searchedTodoList()}>검색</button>
+      </div>
 
-      {todolist.map((todo, id) => (
+      <div>
+        <button onClick={() => setDropdwonIsopen(!dropdownIsopen)}>
+          {dropdown === "all"
+            ? "모두"
+            : dropdown === "yet"
+            ? "진행 중"
+            : "완료됨"}
+        </button>
+      </div>
+
+      {dropdownIsopen && (
+        <ul>
+          {["done", "yet", "all"].map((value) => (
+            <p onClick={() => handledropdown(value)}>{value}</p>
+          ))}
+        </ul>
+      )}
+
+      {filteredTodoList.map((todo, id) => (
         <TodoItem key={id}>
           <Checkbox
             type="checkbox"
             checked={todo.completed}
-            onClick={() => handletodoCheck(todo.id)}
+            onChange={() => handletodoCheck(todo.id)}
           />
-          <TodoText completed={todo.completed}>{todo.text}</TodoText>
-          <Button variant="delete">삭제</Button>
+          {/* () => 와 그냥 함수의 차이 정리할 것 */}
+          {/* checkbox에서는 onclick 대신 onChange */}
+          <TodoText $completed={todo.completed}>{todo.text}</TodoText>
+          <Button variant="delete" onClick={() => deleteTodo(todo.id)}>
+            삭제
+          </Button>
         </TodoItem>
       ))}
-      {/* <TodoList>
-        <TodoItem>
-          <Checkbox type="checkbox" />
-          <TodoText completed={false}>예시 할 일</TodoText>
-          <Button variant="delete">삭제</Button>
-        </TodoItem>
-      </TodoList> */}
     </Container>
   );
 };
@@ -126,12 +193,6 @@ const Button = styled.button<{ variant?: "delete" }>`
   }
 `;
 
-const TodoList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
 const TodoItem = styled.li`
   display: flex;
   align-items: center;
@@ -146,10 +207,10 @@ const TodoItem = styled.li`
   }
 `;
 
-const TodoText = styled.span<{ completed: boolean }>`
+const TodoText = styled.span<{ $completed: boolean }>`
   flex: 1;
-  text-decoration: ${(props) => (props.completed ? "line-through" : "none")};
-  color: ${(props) => (props.completed ? "#888" : "#333")};
+  text-decoration: ${(props) => (props.$completed ? "line-through" : "none")};
+  color: ${(props) => (props.$completed ? "#888" : "#333")};
 `;
 
 const Checkbox = styled.input`
