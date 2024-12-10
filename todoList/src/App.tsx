@@ -12,7 +12,7 @@ type dropdownProps = "done" | "yet" | "all";
 
 const TodoApp = () => {
   const [tempwork, setTempwork] = useState<string>("");
-  const [dropdown, setDropdown] = useState<dropdownProps>("all");
+  const [dropdown, setDropdown] = useState<string>("all");
   const [dropdownIsopen, setDropdwonIsopen] = useState<boolean>(false);
   const [keyword, setKeyword] = useState<string>("");
   const [searchedlist, setSearchedlist] = useState<Todo[]>([]);
@@ -44,6 +44,7 @@ const TodoApp = () => {
 
   useEffect(() => {
     localStorage.setItem("data", JSON.stringify(todolist));
+    console.log(1);
   }, [todolist]);
 
   const handletempwork = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +81,7 @@ const TodoApp = () => {
     setTodolist([newTodo, ...todolist]);
     setTempwork("");
   };
-  const handledropdown = (temp: dropdownProps) => {
+  const handledropdown = (temp: string) => {
     setDropdown(temp);
     setDropdwonIsopen(false);
   };
