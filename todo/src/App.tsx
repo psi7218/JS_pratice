@@ -1,6 +1,7 @@
 // TodoList.tsx
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import * as S from "./styles.ts";
 
 interface todoProps {
   iscompleted: boolean;
@@ -18,14 +19,18 @@ const TodoApp = () => {
   const [keyword, setKeyword] = useState<string>("");
 
   useEffect(() => {
-    setFilteredtodos(todos.filter((todo) => todo.content.includes(keyword)));
-    if (filter === "all") {
-      setFilteredtodos(todos);
-    } else if (filter === "ongoing") {
-      setFilteredtodos(todos.filter((todo) => todo.iscompleted === false));
-    } else {
-      setFilteredtodos(todos.filter((todo) => todo.iscompleted === true));
+    let tempTodos = [...todos];
+
+    if (filter === "ongoing") {
+      tempTodos = tempTodos.filter((todo) => todo.iscompleted === false);
+    } else if (filter === "end") {
+      tempTodos = tempTodos.filter((todo) => todo.iscompleted === true);
     }
+
+    if (keyword.trim()) {
+      tempTodos = tempTodos.filter((todo) => todo.content.includes(keyword));
+    }
+    setFilteredtodos(tempTodos);
   }, [filter, todos, keyword]);
 
   const handleCurrentTodo = (e) => {
@@ -65,37 +70,43 @@ const TodoApp = () => {
   };
 
   return (
-    <Container>
-      <Title>할 일 관리</Title>
+    <S.Container>
+      <S.Title>할 일 관리</S.Title>
 
-      <InputContainer>
-        <Input
+      <S.InputContainer>
+        <S.Input
           type="text"
           placeholder="할 일을 입력하세요"
           value={currentTodo}
           onChange={handleCurrentTodo}
         />
-        <Button onClick={addTodo}>추가</Button>
-      </InputContainer>
-      <Statediv>
-        <Olbutton $clicked={filter === "all"} onClick={() => setFilter("all")}>
+        <S.Button onClick={addTodo}>추가</S.Button>
+      </S.InputContainer>
+      <S.Statediv>
+        <S.Olbutton
+          $clicked={filter === "all"}
+          onClick={() => setFilter("all")}
+        >
           {" "}
           전체
-        </Olbutton>
-        <Olbutton
+        </S.Olbutton>
+        <S.Olbutton
           $clicked={filter === "ongoing"}
           onClick={() => setFilter("ongoing")}
         >
           {" "}
           진행중
-        </Olbutton>
-        <Olbutton $clicked={filter === "end"} onClick={() => setFilter("end")}>
+        </S.Olbutton>
+        <S.Olbutton
+          $clicked={filter === "end"}
+          onClick={() => setFilter("end")}
+        >
           {" "}
           완료
-        </Olbutton>
-      </Statediv>
+        </S.Olbutton>
+      </S.Statediv>
 
-      <Input
+      <S.Input
         type="text"
         placeholder="찾고 싶은 todo"
         value={keyword}
@@ -103,102 +114,23 @@ const TodoApp = () => {
       />
       {filteredtodos.map((todo, index) => {
         return (
-          <TodoItem key={index}>
-            <Checkbox
+          <S.TodoItem key={index}>
+            <S.Checkbox
               type="checkbox"
               checked={todo.iscompleted}
               onChange={() => togglecheckebox(todo.id)}
             />
-            <TodoText $completed={todo.iscompleted}>{todo.content}</TodoText>
-            <Button variant="delete" onClick={() => deleteTodo(todo.id)}>
+            <S.TodoText $completed={todo.iscompleted}>
+              {todo.content}
+            </S.TodoText>
+            <S.Button variant="delete" onClick={() => deleteTodo(todo.id)}>
               삭제
-            </Button>
-          </TodoItem>
+            </S.Button>
+          </S.TodoItem>
         );
       })}
-    </Container>
+    </S.Container>
   );
 };
 
 export default TodoApp;
-
-const Statediv = styled.div`
-  display: flex;
-  align-items: space-between;
-`;
-
-const Olbutton = styled.ol<{ $clicked: boolean }>`
-  background-color: ${($clicked) => ($clicked ? "white" : "green")};
-`;
-const Container = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const Title = styled.h1`
-  color: #333;
-  text-align: center;
-  margin-bottom: 20px;
-`;
-
-const InputContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-`;
-
-const Input = styled.input`
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-
-  &:focus {
-    outline: none;
-    border-color: #0066ff;
-  }
-`;
-
-const Button = styled.button<{ variant?: "delete" }>`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: ${(props) =>
-    props.variant === "delete" ? "#ff4444" : "#0066ff"};
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.variant === "delete" ? "#cc0000" : "#0052cc"};
-  }
-`;
-
-const TodoItem = styled.li`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  margin-bottom: 8px;
-
-  &:hover {
-    background-color: #f0f0f0;
-  }
-`;
-
-const TodoText = styled.span<{ $completed: boolean }>`
-  flex: 1;
-  text-decoration: ${(props) => (props.$completed ? "line-through" : "none")};
-  color: ${(props) => (props.$completed ? "#888" : "#333")};
-`;
-
-const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-`;
