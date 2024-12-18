@@ -6,7 +6,8 @@ export const Statediv = styled.div`
 `;
 
 export const Olbutton = styled.ol<{ $clicked: boolean }>`
-  background-color: ${($clicked) => ($clicked ? "white" : "green")};
+  // border-radius: 1px
+  background-color: ${(props) => (props.$clicked ? "white" : "green")};
 `;
 export const Container = styled.div`
   max-width: 600px;
@@ -79,4 +80,9 @@ export const Checkbox = styled.input`
   width: 18px;
   height: 18px;
   cursor: pointer;
+`;
+
+export const ModifyingTodo = styled.input`
+  padding: 10px 20px;
+  flex: 1;
 `;

@@ -2,12 +2,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as S from "./styles.ts";
+import TodoItem from "./todoItem.tsx";
+import { todoProps } from "./types.ts";
 
-interface todoProps {
-  iscompleted: boolean;
-  content: string;
-  id: string;
-}
 const TodoApp = () => {
   const [currentTodo, setCurrentTodo] = useState<string>("");
   const [todos, setTodos] = useState<todoProps[]>(() => {
@@ -20,7 +17,6 @@ const TodoApp = () => {
 
   useEffect(() => {
     let tempTodos = [...todos];
-
     if (filter === "ongoing") {
       tempTodos = tempTodos.filter((todo) => todo.iscompleted === false);
     } else if (filter === "end") {
@@ -114,19 +110,20 @@ const TodoApp = () => {
       />
       {filteredtodos.map((todo, index) => {
         return (
-          <S.TodoItem key={index}>
-            <S.Checkbox
-              type="checkbox"
-              checked={todo.iscompleted}
-              onChange={() => togglecheckebox(todo.id)}
-            />
-            <S.TodoText $completed={todo.iscompleted}>
-              {todo.content}
-            </S.TodoText>
-            <S.Button variant="delete" onClick={() => deleteTodo(todo.id)}>
-              삭제
-            </S.Button>
-          </S.TodoItem>
+          <div>
+            <S.TodoItem key={index} draggable={true}>
+              <S.Checkbox
+                type="checkbox"
+                checked={todo.iscompleted}
+                onChange={() => togglecheckebox(todo.id)}
+              />
+              <TodoItem todo={todo} setTodos={setTodos} todos={todos} />
+
+              <S.Button variant="delete" onClick={() => deleteTodo(todo.id)}>
+                삭제
+              </S.Button>
+            </S.TodoItem>
+          </div>
         );
       })}
     </S.Container>
