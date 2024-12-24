@@ -1,9 +1,9 @@
 // TodoList.tsx
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import * as S from "./styles.ts";
 import TodoItem from "./todoItem.tsx";
 import { todoProps } from "./types.ts";
+import { useDragAndDrop } from "./hooks/useDragAndDrop.ts";
 
 const TodoApp = () => {
   const [currentTodo, setCurrentTodo] = useState<string>("");
@@ -13,7 +13,19 @@ const TodoApp = () => {
   });
   const [filter, setFilter] = useState<string>("all");
   const [filteredtodos, setFilteredtodos] = useState<todoProps[]>([]);
+  const [typing, setTyping] = useState<string>("");
   const [keyword, setKeyword] = useState<string>("");
+  const [currentEditingId, setCurrentEditingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setKeyword(typing);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [typing]);
 
   useEffect(() => {
     let tempTodos = [...todos];
@@ -29,11 +41,11 @@ const TodoApp = () => {
     setFilteredtodos(tempTodos);
   }, [filter, todos, keyword]);
 
-  const handleCurrentTodo = (e) => {
+  const handleCurrentTodo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentTodo(e.target.value);
   };
-  const handleKeyword = (e) => {
-    setKeyword(e.target.value);
+  const handleKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTyping(e.target.value);
   };
   useEffect(() => {
     localStorage.setItem("todolist", JSON.stringify(todos));
@@ -65,6 +77,13 @@ const TodoApp = () => {
     );
   };
 
+  const { dragStart, dragEnter, drop } = useDragAndDrop({
+    todos,
+    setTodos,
+    filter,
+    filteredtodos,
+    setFilteredtodos,
+  });
   return (
     <S.Container>
       <S.Title>할 일 관리</S.Title>
@@ -105,27 +124,41 @@ const TodoApp = () => {
       <S.Input
         type="text"
         placeholder="찾고 싶은 todo"
-        value={keyword}
+        value={typing}
         onChange={handleKeyword}
       />
-      {filteredtodos.map((todo, index) => {
-        return (
-          <div>
-            <S.TodoItem key={index} draggable={true}>
+
+      <div>
+        {filteredtodos.map((todo, index) => {
+          return (
+            <S.TodoItem
+              key={index}
+              draggable={true}
+              onDragStart={(e) => dragStart(e, index)}
+              onDragEnter={(e) => dragEnter(e, index)}
+              onDragEnd={drop}
+              onDragOver={(e) => e.preventDefault()}
+            >
               <S.Checkbox
                 type="checkbox"
                 checked={todo.iscompleted}
                 onChange={() => togglecheckebox(todo.id)}
               />
-              <TodoItem todo={todo} setTodos={setTodos} todos={todos} />
+              <TodoItem
+                todo={todo}
+                setTodos={setTodos}
+                todos={todos}
+                currentEditingId={currentEditingId}
+                setCurrentEditingId={setCurrentEditingId}
+              />
 
               <S.Button variant="delete" onClick={() => deleteTodo(todo.id)}>
                 삭제
               </S.Button>
             </S.TodoItem>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </S.Container>
   );
 };
