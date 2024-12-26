@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { todoProps } from "../types";
+import { todoProps } from "../types/types";
 
 interface useDragAndDropProps {
   todos: todoProps[];
@@ -20,15 +20,15 @@ export const useDragAndDrop = ({
   const dragItem = useRef<number>(0); // 드래그할 todo idx 저장
   const dragOverItem = useRef<number>(0); // 드래그할 위치의 todo idx 저장
 
-  const dragStart = (e: React.DragEvent, position: number) => {
+  const dragStart = (position: number) => {
     dragItem.current = position;
   };
 
-  const dragEnter = (e: React.DragEvent, position: number) => {
+  const dragEnter = (position: number) => {
     dragOverItem.current = position;
   };
 
-  const drop = (e: React.DragEvent<HTMLDivElement>) => {
+  const drop = () => {
     const newTodos = filter === "all" ? [...todos] : [...filteredtodos];
     const dragItemValue = newTodos[dragItem.current];
     newTodos.splice(dragItem.current, 1);

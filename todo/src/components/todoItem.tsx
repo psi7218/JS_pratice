@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import * as S from "./styles.ts";
-import { todoProps } from "./types.ts";
+import * as S from "../styles/styles.ts";
+import { todoProps } from "../types/types.ts";
 
 interface TodoItemProps {
   todo: todoProps;
