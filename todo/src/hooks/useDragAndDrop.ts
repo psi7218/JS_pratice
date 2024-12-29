@@ -17,7 +17,7 @@ export const useDragAndDrop = ({
   setFilteredtodos,
   filter,
 }: useDragAndDropProps) => {
-  const dragItem = useRef<number>(0); // 드래그할 todo idx 저장
+  const dragItem = useRef<number>(0); // 드래그할 todo idx 저장.
   const dragOverItem = useRef<number>(0); // 드래그할 위치의 todo idx 저장
 
   const dragStart = (position: number) => {
